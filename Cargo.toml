@@ -1,0 +1,25 @@
+[package]
+name = "slides"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+license = "MIT OR Apache-2.0"
+description = "Create, read, edit and convert PPTX slides from Markdown or JSON."
+
+[dependencies]
+zip = "9"
+quick-xml = "0.42"
+pulldown-cmark = "0.13"
+printpdf = { version = "0.12", features = ["png", "jpeg"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+schemars = "1"
+thiserror = "2"
+
+tempfile = "3"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
