@@ -529,37 +529,48 @@ fn output(
     }
 }
 
-/// A request. `op` selects the operation.
+/// Pick an action, then fill in its fields.
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
+#[schemars(title = "Presentation task")]
 #[serde(tag = "op", rename_all = "snake_case")]
 pub enum Input {
-    /// Create a presentation from Markdown or structured slides.
+    /// Build a new presentation from Markdown text or from slides you set up one by one.
+    #[schemars(title = "Create a presentation")]
     Create(CreateInput),
-    /// Extract presentation content and optional template layouts.
+    /// Get the content of a presentation and, if you ask, the layouts in its template.
+    #[schemars(title = "Read a presentation")]
     Read(ReadInput),
-    /// Edit an existing presentation without rebuilding untouched parts.
+    /// Change an existing presentation. Parts you don't change stay as they are.
+    #[schemars(title = "Edit a presentation")]
     Edit(EditInput),
-    /// Convert a presentation or Markdown document to another format.
+    /// Turn a presentation or Markdown document into another format.
+    #[schemars(title = "Convert a file")]
     Convert(ConvertInput),
-    /// Check explicitly labeled numeric facts and optional model references.
+    /// Check numbers that are clearly labeled on the slides. If you add a spreadsheet model, figures that cite it are checked too.
+    #[schemars(title = "Check numbers")]
     Check(CheckInput),
 }
 
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CreateInput {
-    /// Output presentation path relative to the working directory.
+    /// File name for the new presentation, inside the working folder.
+    #[schemars(title = "Save as")]
     pub output: String,
     #[serde(default)]
-    /// Markdown source; provide exactly one of markdown and slides.
+    /// The presentation written in Markdown. Fill in this field or Slides, but not both.
+    #[schemars(title = "Markdown text")]
     pub markdown: Option<String>,
     #[serde(default)]
-    /// Structured slide source; provide exactly one of slides and markdown.
+    /// The presentation set up slide by slide. Fill in this field or Markdown text, but not both.
+    #[schemars(title = "Slides")]
     pub slides: Option<Vec<SlideInput>>,
     #[serde(default)]
-    /// Color and font theme: light, dark, corporate or creative.
+    /// Colors and fonts for the presentation: light, dark, corporate or creative.
+    #[schemars(title = "Theme")]
     pub theme: Option<String>,
-    /// Company PPTX or POTX template path.
+    /// Your company's PPTX or POTX template file.
+    #[schemars(title = "Company template")]
     #[serde(default)]
     pub template: Option<String>,
 }
@@ -567,40 +578,52 @@ pub struct CreateInput {
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SlideInput {
-    /// Disable the automatic themed panel on slides with one to three bullets.
+    /// Slides with one to three bullet points get a panel in the theme colors. Turn this off to leave it out.
+    #[schemars(title = "Accent panel")]
     #[serde(default)]
     pub short_slide_accent: Option<bool>,
-    /// Standard layout type or company layout name when using a template.
+    /// A standard layout type, or the name of a layout from your company template when you use one.
+    #[schemars(title = "Layout")]
     #[serde(default)]
     pub layout: Option<String>,
-    /// Slide heading, preserved as supplied.
+    /// The heading shown on the slide, kept exactly as you type it.
+    #[schemars(title = "Slide title")]
     #[serde(default)]
     pub title: Option<String>,
-    /// Subtitle for a title or section slide.
+    /// A subtitle for a title slide or a section slide.
+    #[schemars(title = "Subtitle")]
     #[serde(default)]
     pub subtitle: Option<String>,
-    /// Bullet text; two leading spaces per nested level.
+    /// One entry per bullet point. Start an entry with two spaces for each level of indent.
+    #[schemars(title = "Bullet points")]
     #[serde(default)]
     pub bullets: Option<Vec<String>>,
-    /// Body text or image caption.
+    /// The main text of the slide, or the caption for its image.
+    #[schemars(title = "Text")]
     #[serde(default)]
     pub text: Option<String>,
-    /// A literal code block, including blank lines. Also available to edit.add.
+    /// Program code shown exactly as typed, blank lines included.
+    #[schemars(title = "Code")]
     #[serde(default)]
     pub code: Option<String>,
-    /// PNG or JPEG image path relative to the working directory.
+    /// A PNG or JPEG picture from the working folder.
+    #[schemars(title = "Image")]
     #[serde(default)]
     pub image: Option<String>,
-    /// Native editable table with literal cell text.
+    /// A table that stays editable in the finished presentation. Cell text is shown exactly as typed.
+    #[schemars(title = "Table")]
     #[serde(default)]
     pub table: Option<TableInput>,
-    /// Native editable chart and its source data.
+    /// A chart that stays editable in the finished presentation, along with its data.
+    #[schemars(title = "Chart")]
     #[serde(default)]
     pub chart: Option<ChartInput>,
-    /// Speaker notes, not visible slide content.
+    /// Notes for the presenter. They don't appear on the slide.
+    #[schemars(title = "Speaker notes")]
     #[serde(default)]
     pub notes: Option<String>,
-    /// Visible source citations rendered in the footer.
+    /// Where your facts come from. These citations appear at the bottom of the slide.
+    #[schemars(title = "Sources")]
     #[serde(default)]
     pub sources: Vec<String>,
 }
@@ -608,33 +631,40 @@ pub struct SlideInput {
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct TableInput {
-    /// Column headings, repeated on continuation slides.
+    /// The heading for each column. They repeat when the table continues onto the next slide.
+    #[schemars(title = "Column headings")]
     pub headers: Vec<String>,
-    /// Rows of literal cell text in column order.
+    /// Each row lists its cells in column order. Cell text is shown exactly as typed.
+    #[schemars(title = "Rows")]
     pub rows: Vec<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ChartInput {
-    /// Chart type: bar, column, line, pie, area or scatter.
+    /// The kind of chart: bar, column, line, pie, area or scatter.
+    #[schemars(title = "Chart type")]
     #[serde(rename = "type")]
     pub kind: String,
-    /// Category labels, or finite numeric X coordinates for scatter charts.
+    /// The category names for the chart. For a scatter chart, enter finite numbers for the horizontal axis instead.
+    #[schemars(title = "Labels")]
     pub labels: Vec<String>,
-    /// Named data series; each value list must match the labels.
+    /// Each series has a name and a list of values. Every series needs exactly one value for each label.
+    #[schemars(title = "Data series")]
     pub series: Vec<SeriesInput>,
 }
 
-/// A chart series: either a named object or a bare array of numbers.
+/// One set of chart data with a name and its values.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum SeriesInput {
     /// A named data series.
     Named {
-        /// Series legend label.
+        /// The name shown for this series in the chart legend.
+        #[schemars(title = "Series name")]
         name: String,
-        /// Finite numeric Y values in label order.
+        /// Finite numbers for the vertical axis, in the same order as the labels.
+        #[schemars(title = "Values")]
         values: Vec<f64>,
     },
     /// Legacy unnamed series accepted by the parser only.
@@ -644,21 +674,27 @@ pub enum SeriesInput {
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ReadInput {
-    /// Input PPTX or POTX path.
+    /// The PPTX or POTX file to read.
+    #[schemars(title = "Presentation file")]
     pub input: String,
-    /// Maximum characters for each returned content representation.
+    /// The most characters to return for the slide text and for the structured data, each counted on its own.
+    #[schemars(title = "Character limit")]
     #[serde(default)]
     pub max_chars: Option<usize>,
-    /// Select text, data, or both. max_chars bounds each representation's content.
+    /// Choose what to read back: the slide text, the structured data, or both. Each part is cut off at the character limit.
+    #[schemars(title = "Content to return")]
     #[serde(default)]
     pub representation: ReadRepresentation,
-    /// Zero-based first slide to return.
+    /// The first slide to return, counting the first slide in the file as 0.
+    #[schemars(title = "Start at slide")]
     #[serde(default)]
     pub offset: usize,
-    /// Maximum number of slides in the page.
+    /// The most slides to return in one batch.
+    #[schemars(title = "Slide limit")]
     #[serde(default)]
     pub limit: Option<usize>,
-    /// Include company template layout descriptions.
+    /// Also describe the layouts in the company template.
+    #[schemars(title = "Include layouts")]
     #[serde(default)]
     pub layouts: bool,
 }
@@ -675,24 +711,30 @@ pub enum ReadRepresentation {
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ReplaceInput {
-    /// Literal paragraph text to find.
+    /// The text to look for in a paragraph, matched exactly as typed.
+    #[schemars(title = "Find")]
     pub find: String,
-    /// Replacement text.
+    /// The text to put in its place.
+    #[schemars(title = "Replace with")]
     pub replace: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SlideEdit {
-    /// Zero-based slide index.
+    /// Which slide to change, counting the first slide as 0.
+    #[schemars(title = "Slide number")]
     pub index: usize,
-    /// Replacement heading text.
+    /// The new heading for the slide.
+    #[schemars(title = "New title")]
     #[serde(default)]
     pub title: Option<String>,
-    /// Replacement body bullets.
+    /// Bullet points that replace the ones on the slide now.
+    #[schemars(title = "New bullet points")]
     #[serde(default)]
     pub bullets: Option<Vec<String>>,
-    /// Replacement speaker notes.
+    /// Speaker notes that replace the ones on the slide now.
+    #[schemars(title = "New speaker notes")]
     #[serde(default)]
     pub notes: Option<String>,
 }
@@ -700,20 +742,26 @@ pub struct SlideEdit {
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct EditInput {
-    /// Existing PPTX path.
+    /// The PPTX file to edit.
+    #[schemars(title = "Presentation file")]
     pub input: String,
-    /// Destination PPTX path; input identity is supported.
+    /// Where to save the edited PPTX file. It can be the same file you're editing.
+    #[schemars(title = "Save as")]
     pub output: String,
-    /// Literal text replacement across paragraph runs.
+    /// Replace text exactly as typed, even where the formatting changes partway through a paragraph.
+    #[schemars(title = "Find and replace")]
     #[serde(default)]
     pub replace: Option<ReplaceInput>,
-    /// Targeted edits by slide index.
+    /// Changes to specific slides, picked by slide number.
+    #[schemars(title = "Slide changes")]
     #[serde(default)]
     pub slides: Option<Vec<SlideEdit>>,
-    /// Zero-based slide indices to remove.
+    /// The slides to remove, counting the first slide as 0.
+    #[schemars(title = "Delete slides")]
     #[serde(default)]
     pub delete: Option<Vec<usize>>,
-    /// New slides using the existing company layouts.
+    /// New slides built with the company layouts already in the presentation.
+    #[schemars(title = "Add slides")]
     #[serde(default)]
     pub add: Option<Vec<SlideInput>>,
 }
@@ -721,11 +769,14 @@ pub struct EditInput {
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ConvertInput {
-    /// Source PPTX or Markdown path.
+    /// The PPTX or Markdown file to convert.
+    #[schemars(title = "File to convert")]
     pub input: String,
-    /// Destination PDF, Markdown or PPTX path, depending on the source.
+    /// Where to save the result as PDF, Markdown or PPTX, depending on the file you convert.
+    #[schemars(title = "Save as")]
     pub output: String,
-    /// Company PPTX or POTX path, for Markdown to PPTX only.
+    /// Your company's PPTX or POTX template. Use it only when turning Markdown into PPTX.
+    #[schemars(title = "Company template")]
     #[serde(default)]
     pub template: Option<String>,
 }
@@ -733,12 +784,15 @@ pub struct ConvertInput {
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct CheckInput {
-    /// Presentation PPTX path to inspect.
+    /// The PPTX file to check.
+    #[schemars(title = "Presentation file")]
     pub input: String,
-    /// Optional XLSX model path for cached-value comparisons.
+    /// An optional XLSX model. Numbers are compared with the values saved in it.
+    #[schemars(title = "Spreadsheet model")]
     #[serde(default)]
     pub model: Option<String>,
-    /// Absolute tolerance in normalized units (percentages use fractions). Default: 0.000001.
+    /// The largest gap allowed between numbers that should match, 0.000001 by default. Units are converted first, so a percentage counts as a fraction (5% is 0.05).
+    #[schemars(title = "Tolerance")]
     #[serde(default)]
     pub tolerance: Option<f64>,
 }

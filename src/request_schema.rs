@@ -11,7 +11,6 @@ pub(crate) fn form_schema() -> Value {
                 .as_str()
                 .unwrap_or("")
                 .to_owned();
-            variant["title"] = json!(op);
             let properties = &mut variant["properties"];
             annotate_path(
                 properties,
@@ -96,20 +95,24 @@ fn expand(node: &Value, root: &Value) -> Value {
                     let mut property = expand(value, root);
                     if property.get("description").is_none() {
                         property["description"] = json!(if name == "op" {
-                            "Operation to perform."
+                            "Which action to run."
                         } else {
                             name
                         });
                     }
-                    property["title"] = json!(
-                        property["description"]
-                            .as_str()
-                            .unwrap_or(name)
-                            .lines()
-                            .next()
-                            .unwrap_or(name)
-                            .trim_end_matches('.')
-                    );
+                    if property.get("title").is_none() {
+                        property["title"] = json!(if name == "op" {
+                            "Action"
+                        } else {
+                            property["description"]
+                                .as_str()
+                                .unwrap_or(name)
+                                .lines()
+                                .next()
+                                .unwrap_or(name)
+                                .trim_end_matches('.')
+                        });
+                    }
                     if name == "type"
                         && object
                             .get("properties")
